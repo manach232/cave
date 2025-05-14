@@ -1,0 +1,28 @@
+#cloud-config
+network:
+  version: 2
+  ethernets:
+  {% for mac, ipv4_cidr, is_mngmt in interfaces %}
+    int{{ loop.index0 }}:
+      match:
+        macaddress: '{{ mac }}'
+      addresses:
+        - {{ ipv4_cidr }}
+      nameservers:
+      {% if is_mngmt %}
+        addresses: [{{ management_default_gateway }}]
+      {% else %}
+        addresses: [{{ range_dns_server }}]
+      {% endif %}
+      routes:
+      {% if is_mngmt %}
+       - to: 0.0.0.0/0
+         via: {{ management_default_gateway }} 
+         metric: 100
+      {% else %}
+       - to: 0.0.0.0/0
+         via: {{ range_default_gateway }}
+         metric: 200
+      {% endif %}
+  {% endfor %}
+    

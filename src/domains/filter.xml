@@ -1,0 +1,5 @@
+<filter name='deny-vm-host' chain='mac' priority='-800'>
+  <rule direction='out' action='drop'>
+    <mac dstmacaddr='$MAC'/>
+  </rule>
+</filter>

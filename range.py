@@ -1,0 +1,219 @@
+from src.pools.dir_pool import Pool
+from src.networks.network import Network
+from src.os_types import OsType
+from src.domains.domain_linux.domain_linux import LinuxDomain
+from src.domains.interface import Interface
+from src.autoinstall.linux.cloudinit import CloudInitMetaData, CloudInitUserConfig, CloudInitNetworkConfig
+from src.autoinstall.cdrom import create_and_push_cd
+from src.autoinstall.windows.windows_client.autounattend import Autounattend
+from src.domains.domain_windows.domain_windows import WindowsDomain
+from src.domains.domain_windows.domain_windows import WindowsDomain
+from src.autoinstall.windows.windows_server.autounattend import AutounattendServer
+from src.domains.domain_windows_tpm.domain_windows_tpm import WindowsTPMDomain
+from src.autoinstall.windows.windows_gpt_tpm.autounattend import AutounattendGPT
+
+import uuid
+import logging
+import socket
+from time import sleep
+from random import randint
+import sys
+
+root = logging.getLogger("default")
+root.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+root.addHandler(handler)
+logger = logging.getLogger("default")
+
+def random_mac():
+    return "02:00:00:%02x:%02x:%02x" % (randint(0, 255),
+                                        randint(0, 255),
+                                        randint(0, 255))
+
+class Range():
+    def __init__(self, libvirt_connection, ssh_connect_uri: str, remote_autoinstall_iso_path: str, domain_ssh_pub_key: str, domain_user: str, domain_password: str):
+        self.libvirt_connection = libvirt_connection
+        self.ssh_connect_uri = ssh_connect_uri
+        self.remote_autoinstall_iso_path = remote_autoinstall_iso_path
+        self.domain_user = domain_user
+        self.domain_password = domain_password
+        self.domain_ssh_pub_key = domain_ssh_pub_key
+        self.pool = None
+        self.networks = []
+        self.domains = []
+
+    def add_pool(self, name: str, path: str):
+        self.pool = Pool(name, path)
+        self.pool.create(self.libvirt_connection)
+        return self.pool
+         
+    def add_network(self, name: str, host_isolated: bool, ipv4: str, ipv4_subnet: str, isolate_guests: bool, ipv6: str, ipv6_prefix: str, mode: str, ingress_route_subnet=None, ingress_route_gateway=None):
+
+        if host_isolated and (ingress_route_gateway or ingress_route_subnet or ipv4 or ipv6):
+            logger.error(f"host_isolated flag set but also one or more of (ingress_route_gateway or ingress_route_subnet or ipv4 or ipv6) are set for network {name}")
+            raise Exception("semantic check error")
+
+        n = Network(name, host_isolated, ipv4, ipv4_subnet, isolate_guests, ipv6, ipv6_prefix, mode, ingress_route_subnet, ingress_route_gateway)
+        n.create(self.libvirt_connection)
+        self.networks.append(n)
+        return n
+
+    def add_linux_domain(self, name: str, hostname: str, base_image_path: str, interfaces: list[Interface], graphics_passwd: str,  disk_volume_size_gb: int, memory: int, vcpus: int, graphics_port: str, graphics_auto_port: str, graphics_address: str, default_gateway: str, dns_server: str, management_default_gateway: str):
+        """
+            Args:
+        """
+        if not self.pool:
+            logger.error(f"cannot create linux domain before pool was created")
+        assert self.pool
+
+        # generate random macs for interfaces without mac
+        for interface in interfaces:
+            if len(interface.mac) == 0:
+                interface.mac = random_mac()
+        
+        meta_data = CloudInitMetaData(hostname=hostname, instance_id=str(uuid.uuid4())) 
+        user_config = CloudInitUserConfig(self.domain_user, 
+                        self.domain_password,
+                        self.domain_ssh_pub_key 
+                        )
+        network_config = CloudInitNetworkConfig(interfaces, 
+                            range_default_gateway=default_gateway,
+                            range_dns_server=dns_server, 
+                            management_default_gateway=management_default_gateway)
+        
+        cdrom_files = {CloudInitMetaData.CLOUDINIT_FILE_NAME:str(meta_data), 
+                        CloudInitUserConfig.CLOUDINIT_FILE_NAME:str(user_config),
+                        CloudInitNetworkConfig.CLOUDINIT_FILE_NAME:str(network_config)}
+
+        remote_path = create_and_push_cd(f"{self.remote_autoinstall_iso_path}/{uuid.uuid4()}.iso", self.ssh_connect_uri, cdrom_files)
+
+        volume = self.pool.create_volume(f"{name}_vol", disk_volume_size_gb, base_image_path, format="qcow2")
+        linux_domain = LinuxDomain(name, volume, interfaces, graphics_passwd, remote_path, memory, vcpus, graphics_port, graphics_auto_port, graphics_address, OsType.GENERIC_LINUX)
+        linux_domain.create(self.libvirt_connection)
+        self.domains.append(linux_domain)
+        return linux_domain
+
+    def add_windows_domain(self, name: str, hostname: str, boot_iso: str, product_key: str, interfaces: list[Interface], graphics_passwd: str,  disk_volume_size_gb: int, memory: int, vcpus: int, graphics_port: str, graphics_auto_port: str, graphics_address: str, default_gateway: str, dns_server: str, management_default_gateway: str):
+        if not self.pool:
+            logger.error(f"cannot create windows domain before pool was created")
+
+        assert self.pool
+
+        # generate random macs for interfaces without mac
+        for interface in interfaces:
+            if len(interface.mac) == 0:
+                interface.mac = random_mac()
+        
+        
+        unattend = Autounattend(interfaces=interfaces, 
+                        username=self.domain_user,
+                        ssh_pub=self.domain_ssh_pub_key,
+                        password=self.domain_password,
+                        hostname=hostname,
+                        management_default_gateway=management_default_gateway,
+                        range_default_gateway=default_gateway,
+                        range_dns_server=dns_server,
+                        product_key=product_key
+                        )
+
+        cdrom_files = {"Autounattend.xml":str(unattend)}
+        remote_path = create_and_push_cd(f"{self.remote_autoinstall_iso_path}/{uuid.uuid4()}.iso", self.ssh_connect_uri, cdrom_files)
+
+        volume = self.pool.create_volume(f"{name}_vol", disk_volume_size_gb, None, format="raw")
+
+        wd = WindowsDomain(name, volume, boot_iso, interfaces, graphics_passwd, remote_path, memory, vcpus, graphics_port, graphics_auto_port, graphics_address, OsType.GENERIC_WINDOWS)
+
+        wd.create(self.libvirt_connection)
+        self.domains.append(wd)
+        return wd
+
+    def add_windows_server_domain(self, name: str, hostname: str, boot_iso: str, product_key: str|None, version_index: int|None, interfaces: list[Interface], graphics_passwd: str,  disk_volume_size_gb: int, memory: int, vcpus: int, graphics_port: str, graphics_auto_port: str, graphics_address: str, default_gateway: str, dns_server: str, management_default_gateway: str):
+        if not self.pool:
+            logger.error(f"cannot create windows server domain before pool was created")
+
+        assert self.pool
+
+        # generate random macs for interfaces without mac
+        for interface in interfaces:
+            if len(interface.mac) == 0:
+                interface.mac = random_mac()
+        
+        
+        unattend = AutounattendServer(interfaces=interfaces, 
+                        username=self.domain_user,
+                        ssh_pub=self.domain_ssh_pub_key,
+                        password=self.domain_password,
+                        hostname=hostname,
+                        management_default_gateway=management_default_gateway,
+                        range_default_gateway=default_gateway,
+                        range_dns_server=dns_server,
+                        version_index=version_index,
+                        product_key=None,
+                        )
+
+        cdrom_files = {"Autounattend.xml":str(unattend)}
+        remote_path = create_and_push_cd(f"{self.remote_autoinstall_iso_path}/{uuid.uuid4()}.iso", self.ssh_connect_uri, cdrom_files)
+
+        volume = self.pool.create_volume(f"{name}_vol", disk_volume_size_gb, None, format="raw")
+
+        wd = WindowsDomain(name, volume, boot_iso, interfaces, graphics_passwd, remote_path, memory, vcpus, graphics_port, graphics_auto_port, graphics_address, OsType.GENERIC_WINDOWS_SERVER)
+
+        wd.create(self.libvirt_connection)
+        self.domains.append(wd)
+        return wd
+
+    def add_windows_tpm_domain(self, name: str, hostname: str, boot_iso: str, product_key: str, interfaces: list[Interface], graphics_passwd: str,  disk_volume_size_gb: int, memory: int, vcpus: int, graphics_port: str, graphics_auto_port: str, graphics_address: str, default_gateway: str, dns_server: str, management_default_gateway: str):
+        if not self.pool:
+            logger.error(f"cannot create windows domain before pool was created")
+
+        assert self.pool
+
+        # generate random macs for interfaces without mac
+        for interface in interfaces:
+            if len(interface.mac) == 0:
+                interface.mac = random_mac()
+        
+        
+        unattend = AutounattendGPT(interfaces=interfaces, 
+                        username=self.domain_user,
+                        ssh_pub=self.domain_ssh_pub_key,
+                        password=self.domain_password,
+                        hostname=hostname,
+                        management_default_gateway=management_default_gateway,
+                        range_default_gateway=default_gateway,
+                        range_dns_server=dns_server,
+                        product_key=product_key
+                        )
+
+        cdrom_files = {"Autounattend.xml":str(unattend)}
+        remote_path = create_and_push_cd(f"{self.remote_autoinstall_iso_path}/{uuid.uuid4()}.iso", self.ssh_connect_uri, cdrom_files)
+
+        volume = self.pool.create_volume(f"{name}_vol", disk_volume_size_gb, None, format="raw")
+
+        wd = WindowsTPMDomain(name, volume, boot_iso, interfaces, graphics_passwd, remote_path, memory, vcpus, graphics_port, graphics_auto_port, graphics_address, OsType.WINDOWS_TPM)
+
+        wd.create(self.libvirt_connection)
+        self.domains.append(wd)
+        return wd
+
+    def get_state(self):
+        assert self.pool
+        return {"domains":[domain.to_dict() for domain in self.domains], "networks": [network.to_dict() for network in self.networks], "pool": {"name":self.pool.name, "path":self.pool.path}}
+
+    def block_unil_rdy(self):
+        for domain in self.domains:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            ipv4 = domain.get_mngmt_ipv4()
+            result = 1
+            logger.info(f"waiting for {domain.name} to be reachable")
+            while result != 0:
+                result = sock.connect_ex((ipv4, 22))
+                sleep(5)
+            logger.info(f"{domain.name} is up.")
+            sock.close()
+
+

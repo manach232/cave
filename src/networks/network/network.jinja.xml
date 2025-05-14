@@ -1,0 +1,23 @@
+<network ipv6="{{ 'no' if ipv6 else 'yes'}}">
+  <name>{{ name }}</name>
+  <bridge stp='off'/>
+  <port isolated="{{ isolate_guests }}"/>
+  <!-- https://libvirt.org/formatnetwork.html#setting-vlan-tag-on-supported-network-types-only "fully isolated see bottom" -->
+  {% if not host_isolated %}
+  {% if mode %}
+  <forward mode="{{ mode }}"/>
+  {% endif %}
+
+  {% if ipv4 %}
+  <ip address="{{ ipv4 }}" netmask="{{ ipv4_subnetmask }}" index="0"/>
+  {% if ingress_route_subnet_ip is not none %}
+  <route address="{{ ingress_route_subnet_ip }}" prefix="{{ ingress_route_subnet_prefix_length }}" gateway="{{ ingress_route_gateway }}"/>
+  {% endif %}
+  {% endif %}
+
+  {% if ipv6 %}
+  <ip family="ipv6" address="{{ ipv6 }}" prefix="{{ ipv6_prefix }}" index="1">
+  </ip>
+  {% endif %}
+  {% endif %}
+</network>

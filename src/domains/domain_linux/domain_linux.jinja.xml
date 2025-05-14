@@ -1,0 +1,86 @@
+<domain type='kvm' >
+  
+  <name>{{ name }}</name>
+  <uuid>{{ uuid }}</uuid>
+  <memory unit='MiB'>{{ memory }}</memory>
+  <vcpu placement='static' current="{{ vcpus }}">{{ vcpus }}</vcpu>
+  <os>
+    <type arch='x86_64' machine='q35'>hvm</type>
+  </os>
+  <features>
+    <acpi />
+    <apic />
+    <vmport state='off' />
+  </features>
+  <cpu mode='maximum' check='none' migratable='on'>
+    <topology sockets="1" cores="{{ vcpus }}" threads="1"/> 
+  </cpu>
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup' />
+    <timer name='pit' tickpolicy='delay' />
+    <timer name='hpet' present='no' />
+  </clock>
+  <on_poweroff>restart</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <pm>
+    <suspend-to-mem enabled='no' />
+    <suspend-to-disk enabled='no' />
+  </pm>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator> 
+    <disk type='volume' device='disk'>
+      <driver name='qemu' type='{{ disk_volume["format"] }}' />
+      <source pool='{{ disk_volume["pool_name"] }}' volume='{{ disk_volume["name"] }}' index='1' />
+      <target dev='sda' bus='sata' />
+      <address type='drive' controller='0' bus='0' target='0' unit='0' />
+      <backingStore type='file'>
+        <format type='qcow2'/>
+        <source file='{{ disk_volume["base_img"] }}'/>
+        <backingStore/>
+      </backingStore>
+      <boot order='1'/>
+    </disk> 
+    <controller type='scsi' index='0' model='virtio-scsi'/>
+    {% if cdrom is not none %}
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='{{ cdrom }}' index='2'/>
+      <alias name="ua-config-cdrom"/>
+      <backingStore/>
+      <target dev='hdc' bus='sata'/>
+      <readonly/>
+    </disk>
+    {% endif %}
+   {% for interface in interfaces %}
+    <interface type='network'>
+      <mac address='{{ interface["mac"] }}'/>
+      <model type='e1000' />
+      <source network='{{ interface["net_name"] }}'/>
+      {% if interface["net_host_isolated"] %}
+      <filterref filter="deny-vm-host">
+        <parameter name='HOSTMAC' value='{{ interface["net_host_mac"] }}'/>
+      </filterref>
+      {% endif %}
+      <alias name="ua-{{ interface['net_name'] }}"/>
+    </interface>
+  {% endfor %}
+ <video>
+    <model type='virtio'>
+    </model>
+    <driver name='qemu'/>
+  </video>
+  <input type='keyboard' bus='usb'/>
+  <input type='tablet' bus='usb'/>
+  <graphics type='vnc' port='{{ graphics_port }}'
+      autoport='{{ graphics_auto_port }}' passwd='{{ graphics_passwd }}'>
+      <listen type='address' address='{{ graphics_address }}' />
+  </graphics>
+   <memballoon
+      model='virtio'>
+      <alias name='balloon0' />
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0' />
+    </memballoon>
+  </devices>
+</domain>
+
