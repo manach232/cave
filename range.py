@@ -1,3 +1,4 @@
+from libvirt import libvirtError
 from src.pools.dir_pool import Pool
 from src.networks.network import Network
 from src.os_types import OsType
@@ -199,6 +200,57 @@ class Range():
         wd.create(self.libvirt_connection)
         self.domains.append(wd)
         return wd
+
+    def nuke_libvirt(self):
+        # Get list of all pool names (active and inactive)
+        logger.info(f"nuking pools and volumes")
+        pools = self.libvirt_connection.listAllStoragePools()
+        for pool in pools:
+            try:
+                logger.info(f"Processing pool: {pool.name()}")
+
+                # Delete all volumes in the pool
+                volumes = pool.listAllVolumes()
+                for volume in volumes:
+                    logger.info(f"Deleting volume: {volume.name()}")
+                    volume.delete(0)
+
+                # Destroy the pool if active
+                if pool.isActive():
+                    logger.info(f"Destroying pool: {pool.name()}")
+                    pool.destroy()
+
+                # Undefine the pool (removes it from libvirt config)
+                logger.info(f"Undefining pool: {pool.name()}")
+                pool.undefine()
+
+            except libvirtError as e:
+                logger.error(f"Error processing pool '{pool.name()}': {e}")
+        logger.info("All pools and volumes destroyed.")
+
+        logger.info("Nuking domains")
+        domains = self.libvirt_connection.listAllDomains()
+
+        for domain in domains:
+            try:
+                if domain.isActive():
+                    domain.destroy()
+                if domain.isPersistent():
+                    domain.undefine()
+            except libvirtError as e:
+                logger.error(f"Error processing domain '{domain.name()}': {e}")
+
+        logger.info("Nuking networks")
+        networks = self.libvirt_connection.listAllNetworks()
+
+        for network in networks:
+            try:
+                if network.isActive():
+                    network.destroy()
+                if network.isPersistent():
+                    network.undefine()
+            except libvirtError as e:
+                logger.error(f"Error processing network '{network.name()}': {e}")
 
     def get_state(self):
         assert self.pool

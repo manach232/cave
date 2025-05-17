@@ -44,6 +44,7 @@ for local_image_path in LOCAL_IMAGE_PATHS:
 conn = libvirt.open(CON_URI)
 
 range = Range(conn, SSH_URI, TMP_CLOUD_INIT_DIR, SSH_PUB, USERNAME, PASSWORD)
+range.nuke_libvirt()
 range.add_pool("pool1",REMOTE_POOL_DIR)
 
 # isolated network
@@ -140,5 +141,4 @@ assert return_val == 0
 # linux02
 return_val = subprocess.call(["ssh", "-i", SSH_PRIV_PATH, "-o", "UserKnownHostsFile /dev/null", "-o StrictHostKeyChecking=no", f"{USERNAME}@10.10.0.4", f'ping 10.10.1.2 -c 2 -4 && ping 10.10.1.3 -c 2 -4'])
 assert return_val == 0
-
 
