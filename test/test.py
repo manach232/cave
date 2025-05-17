@@ -79,7 +79,20 @@ im = Interface(mac="",
                is_mngmt=True) 
 
 ubuntu_img = f"{REMOTE_IMAGES_DIR}/{os.path.basename(UBUNTU_IMAGE)}"
-ld = range.add_linux_domain("linux01", "lin01", ubuntu_img, [i1, im], "pw", 8, 1024, 2, "6000", "no", "0.0.0.0", "10.10.1.1", "1.1.1.1", "10.10.0.1") 
+ld = range.add_linux_domain(name="linux01", 
+                            hostname="lin01", 
+                            base_image_path=ubuntu_img, 
+                            interfaces=[i1, im],
+                            graphics_passwd="pw",
+                            disk_volume_size_gb=8,
+                            memory=1024,
+                            vcpus=2,
+                            graphics_port="6000",
+                            graphics_auto_port="no", 
+                            graphics_address="0.0.0.0",
+                            default_gateway="10.10.1.1",
+                            dns_server="1.1.1.1",
+                            management_default_gateway="10.10.0.1") 
 
 i1 = Interface(mac="", 
                network=n1, 
