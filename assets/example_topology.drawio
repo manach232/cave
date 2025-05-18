@@ -1,9 +1,12 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:138.0) Gecko/20100101 Firefox/138.0" version="27.0.6">
   <diagram name="Page-1" id="vnAkXuTuvJRwIlcAzrVX">
-    <mxGraphModel dx="3254" dy="1168" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+    <mxGraphModel dx="3952" dy="1654" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="xQ_bCr9xcQz8_RW7OUUC-25" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.patternFillRect;fillStyle=diag;step=5;fillStrokeWidth=0.2;fillStrokeColor=#dddddd;fillColor=#e1d5e7;strokeColor=#9673a6;labelPosition=right;align=left;fontSize=33;" vertex="1" parent="1">
+          <mxGeometry x="-370" y="790" width="1510" height="460" as="geometry" />
+        </mxCell>
         <mxCell id="xQ_bCr9xcQz8_RW7OUUC-5" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.patternFillRect;fillStyle=diag;step=5;fillStrokeWidth=0.2;fillStrokeColor=#dddddd;fillColor=#d5e8d4;strokeColor=#82b366;labelPosition=right;align=left;fontSize=33;" vertex="1" parent="1">
           <mxGeometry x="-370" y="100" width="1510" height="690" as="geometry" />
         </mxCell>
@@ -250,6 +253,12 @@
         </mxCell>
         <mxCell id="xQ_bCr9xcQz8_RW7OUUC-24" value="The cave client is the computer used to run the cave tool and access the provisioned infrastructure. It could for example ssh into one of the attacker machines, if fw0 allows that." style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;" vertex="1" parent="1">
           <mxGeometry x="-149.75" y="1062" width="239.5" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xQ_bCr9xcQz8_RW7OUUC-26" value="&lt;div&gt;physical network&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=29;" vertex="1" parent="1">
+          <mxGeometry x="810" y="804" width="340" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xQ_bCr9xcQz8_RW7OUUC-27" value="192.168.0.0/16" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=21;" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="1020" y="850" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
