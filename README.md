@@ -2,8 +2,10 @@
 
 **cave** is a Python-based automation toolkit for automated provisioning virtual infrastructure.  
 Define your virtual infrastructure using code, cave handles the rest.  
+Can be especially useful for more complex red-teaming training environments.  
 
 Cave is still a prototype, use with caution.  
+It is heavily worked on right now, stuff will change.  
 
 ## Features
 
