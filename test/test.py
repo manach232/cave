@@ -116,7 +116,7 @@ wd = range.add_windows_server_domain("windows01", "win01", windows_server22_iso,
 
 range.block_unil_rdy()
 
-
+# TODO: cleanup
 
 # testcase whoami
 LOGGER.info("testcase whoami")

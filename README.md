@@ -15,11 +15,20 @@ It is heavily worked on right now, stuff will change.
 * Automated configuration of network interfaces
 * Automated installation of ssh
 * Python API
+
+Cave handles the creation of virtual machines and networks.
+It automates OS setup for Linux and Windows.
+It handles the setup of OpenSSH on the machines.
+
+So after the provisioning, you are left with a virtual infrastructure consisting of networks and machines you defined, ready to be connected to.
+An obvious next step is to further configure the machines using IaC tools like Ansible or Chef.
+
 ---
 
 ## Use Cases
 * use in conjunction with Ansible to build a full-fledged cyber range
 * quick and easy setup for testing environments
+* use for automated creation of virtual machines to test your code in
 
 ---
 ## Example topology
