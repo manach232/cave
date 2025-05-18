@@ -43,7 +43,7 @@ In case you face selinux issues, a quick-fix might be disabling apparmor/selinux
 In order to allow traffic for comunicating with the virtual infrastructure, you will need to setup routes.
 Take an ipv4 range that you will later use to make the machines within your deployment accessible to your network.
 The virtualisation host will act as a router/next hop for the virtual networks and machines.  
-For an example, see [example topology](#-Example-topology)
+For an example, see [example topology](assets/example_topology.drawio.png)
 
 * Download images
 Download ISOs of the windows versions you will need, tested are: Windows 10, Windows 11, Windows-Server 16 and newer  
@@ -53,7 +53,7 @@ Download cloud-init images of the linux distributions you will use. Ubuntu <http
 ---
 
 ## Usage
-See test/test.py for an example.  
+See [example](test/test.py) for an example.  
 ### Networks and Interfaces
 ```python
 mngt = range.add_network(name="mngmt", 
