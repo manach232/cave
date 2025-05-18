@@ -52,16 +52,36 @@ class Range():
         self.pool.create(self.libvirt_connection)
         return self.pool
          
-    def add_network(self, name: str, host_isolated: bool, ipv4: str, ipv4_subnet: str, isolate_guests: bool, ipv6: str, ipv6_prefix: str, mode: str, ingress_route_subnet=None, ingress_route_gateway=None):
+    def add_network(self, name: str, mode: str, ipv4: str, ipv4_subnet: str, ingress_route_subnet=None, ingress_route_gateway=None):
 
-        if host_isolated and (ingress_route_gateway or ingress_route_subnet or ipv4 or ipv6):
-            logger.error(f"host_isolated flag set but also one or more of (ingress_route_gateway or ingress_route_subnet or ipv4 or ipv6) are set for network {name}")
-            raise Exception("semantic check error")
+        n = Network(name=name, 
+                    host_isolated=True if mode == "" else False, 
+                    ipv4=ipv4, ipv4_subnet=ipv4_subnet, 
+                    isolate_guests=False,
+                    ipv6="", ipv6_prefix="", 
+                    mode=mode, 
+                    ingress_route_subnet=ingress_route_subnet, ingress_route_gateway=ingress_route_gateway)
 
-        n = Network(name, host_isolated, ipv4, ipv4_subnet, isolate_guests, ipv6, ipv6_prefix, mode, ingress_route_subnet, ingress_route_gateway)
+
         n.create(self.libvirt_connection)
         self.networks.append(n)
         return n
+
+    def add_management_network(self, name: str, ipv4: str, ipv4_subnet: str):
+
+        n = Network(name=name, 
+                    host_isolated=False, 
+                    ipv4=ipv4, ipv4_subnet=ipv4_subnet, 
+                    isolate_guests=False,
+                    ipv6="", ipv6_prefix="", 
+                    mode="open", 
+                    ingress_route_subnet=None, ingress_route_gateway=None)
+
+        n.create(self.libvirt_connection)
+        self.networks.append(n)
+        return n
+
+
 
     def add_linux_domain(self, name: str, hostname: str, base_image_path: str, interfaces: list[Interface], graphics_passwd: str,  disk_volume_size_gb: int, memory: int, vcpus: int, graphics_port: str, graphics_auto_port: str, graphics_address: str, default_gateway: str, dns_server: str, management_default_gateway: str):
         """

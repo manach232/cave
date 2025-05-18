@@ -48,22 +48,13 @@ range.nuke_libvirt()
 range.add_pool("pool1",REMOTE_POOL_DIR)
 
 # isolated network
-mngt = range.add_network(name="mngmt", 
-                         host_isolated=False, 
+mngt = range.add_management_network(name="mngmt", 
                          ipv4="10.10.0.1", 
-                         ipv4_subnet="255.255.255.0", 
-                         isolate_guests=False,
-                         ipv6="",
-                         ipv6_prefix="",
-                         mode="open")  
+                         ipv4_subnet="255.255.255.0")
 
 n1 = range.add_network(name="network1", 
-                       host_isolated=True, 
                        ipv4="", 
                        ipv4_subnet="", 
-                       isolate_guests=False, 
-                       ipv6="", 
-                       ipv6_prefix="", 
                        mode="")
 
 i1 = Interface(mac="", 

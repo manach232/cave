@@ -45,6 +45,8 @@ Take an ipv4 range that you will later use to make the machines within your depl
 The virtualisation host will act as a router/next hop for the virtual networks and machines.  
 For an example, see [example topology](assets/example_topology.drawio.png)
 
+* Create ssh key for root user
+
 * Download images
 Download ISOs of the windows versions you will need, tested are: Windows 10, Windows 11, Windows-Server 16 and newer  
 If you need to use Windows11/Any windows with uefi, you need to make a small change to the iso to make it boot without user interaction <https://serverfault.com/questions/353826/windows-boot-iso-file-without-press-any-key>.  
@@ -54,31 +56,35 @@ Download cloud-init images of the linux distributions you will use. Ubuntu <http
 
 ## Usage
 See [example](test/test.py) for an example.  
+
+### Setup
+```python
+
+CON_URI = f"qemu+ssh://root@{HOST}/system"
+
+conn = libvirt.open(CON_URI)
+range = Range(conn, SSH_URI, TMP_CLOUD_INIT_DIR, SSH_PUB, USERNAME, PASSWORD)
+range.nuke_libvirt()
+range.add_pool(POOL_NAME,REMOTE_POOL_DIR)
+```
+
 ### Networks and Interfaces
 ```python
-mngt = range.add_network(name="mngmt", 
-                         host_isolated=False, 
-                         ipv4="10.10.0.1", 
-                         ipv4_subnet="255.255.255.0", 
-                         isolate_guests=False,
-                         ipv6="",
-                         ipv6_prefix="",
-                         mode="open")  
+
+mngt = range.add_management_network(name="mngmt", 
+                         ipv4="10.10.0.1", # ipv4 the libvirt host gets inside the network, it then acts as gateway
+                         ipv4_subnet="255.255.255.0") # subnet mask
 
 n1 = range.add_network(name="network1", 
-                       host_isolated=True, 
                        ipv4="", 
                        ipv4_subnet="", 
-                       isolate_guests=False, 
-                       ipv6="", 
-                       ipv6_prefix="", 
-                       mode="")
+                       mode="") # mode, "open" if the libvirt host should route to and from the network
 
-i1 = Interface(mac="", 
-               network=n1, 
-               ipv4="10.10.1.2", 
-               prefix_length=24, 
-               is_mngmt=False) 
+i1 = Interface(mac="", # leave empty 
+               network=n1, # what network the interface is attached to
+               ipv4="10.10.1.2", # ipv4 address of the interface
+               prefix_length=24, # subnet mask network bist
+               is_mngmt=False) # wether or not this is a management interface e.g. is connected to a management network, mngmt interfaces will be detatched in the cleanup phase
 
 im = Interface(mac="", 
                network=mngt, 
@@ -90,18 +96,18 @@ im = Interface(mac="",
 ### Virtual Machines
 ```python
 ubuntu_img = f"{REMOTE_IMAGES_DIR}/{os.path.basename(UBUNTU_IMAGE)}"
-ld = range.add_linux_domain(name="linux01", 
+ld = range.add_linux_domain(name="linux01", # internal name
                             hostname="lin01", 
-                            base_image_path=ubuntu_img, 
-                            interfaces=[i1, im],
-                            graphics_passwd="pw",
-                            disk_volume_size_gb=8,
-                            memory=1024,
-                            vcpus=2,
-                            graphics_port="6000",
-                            graphics_auto_port="no", 
-                            graphics_address="0.0.0.0",
-                            default_gateway="10.10.1.1",
-                            dns_server="1.1.1.1",
-                            management_default_gateway="10.10.0.1") 
+                            base_image_path=ubuntu_img, # absolute path to the cloud-init base image on the libvirt host
+                            interfaces=[i1, im], # list of interfaces
+                            graphics_passwd="pw", # vnc password
+                            disk_volume_size_gb=8, # size of the main disk in GB
+                            memory=1024, # ram
+                            vcpus=2, # virtual vpu cores
+                            graphics_port="6000", # port on which the vnc server listens
+                            graphics_auto_port="no", # choose port automatically, no if graphics_port is set
+                            graphics_address="0.0.0.0", # on which ip/interface the vnc server should listen
+                            default_gateway="10.10.1.1", # the range-internal default gateway
+                            dns_server="1.1.1.1", # the range internal dns server
+                            management_default_gateway="10.10.0.1") # the default gateway for the management interface
 ```
