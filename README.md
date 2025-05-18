@@ -9,7 +9,7 @@ It is heavily worked on right now, stuff will change.
 
 ## Features
 
-* Supports both linux and windows
+* Supports both Linux and Windows
 * Automated provisioning of virtual machines
 * Automated provisioning of networks
 * Automated configuration of network interfaces
@@ -17,9 +17,8 @@ It is heavily worked on right now, stuff will change.
 * Python API
 ---
 
-
 ## Use Cases
-* use in conjunction with ansible to build a full-fledged cyber range
+* use in conjunction with Ansible to build a full-fledged cyber range
 * quick and easy setup for testing environments
 
 ---
@@ -30,19 +29,19 @@ It is heavily worked on right now, stuff will change.
 
 ## Getting Started
 
-You will need a Linux machine as your libvirt virtualisation host.
-You can use whatever distro you like, cave was tested and will be tested using debian.
+You will need a Linux machine as your Libvirt virtualisation host.
+You can use whatever distro you like, cave was tested and will be tested using Debian.
 
 ### Install libvirt
-* Install libvirt (debian) `apt install --no-install-recommends qemu-system libvirt-clients libvirt-daemon-system`
+* Install Libvirt (Debian) `apt install --no-install-recommends qemu-system libvirt-clients libvirt-daemon-system`
 * Install qemu-img `apt install qemu-utils`
 * Install dnsmasq `apt install dnsmasq`
-* install software tpm and ovmf for windows 11/uefi `apt install swtpm stpm-tools ovmf`
+* install software tpm and ovmf for windows 11/UEFI `apt install swtpm stpm-tools ovmf`
 
-In case you face selinux issues, a quick-fix might be disabling apparmor/selinux by setting "security_driver" to ["none"] in /etc/libvirt/qemu.conf. Then `systemctl restart libvirtd`  
+In case you face SElLnux issues, a quick-fix might be disabling apparmor/SELinux for Libvirt by setting "security_driver" to ["none"] in /etc/libvirt/qemu.conf. Then `systemctl restart libvirtd`  
 
 * Setup routes to your cave host
-In order to allow traffic for comunicating with the virtual infrastructure, you will need to setup routes.
+In order to allow traffic for communicating with the virtual infrastructure, you will need to setup routes.
 Take an ipv4 range that you will later use to make the machines within your deployment accessible to your network.
 The virtualisation host will act as a router/next hop for the virtual networks and machines.  
 For an example, see [example topology](assets/example_topology.drawio.png)
@@ -51,8 +50,8 @@ For an example, see [example topology](assets/example_topology.drawio.png)
 
 * Download images
 Download ISOs of the windows versions you will need, tested are: Windows 10, Windows 11, Windows-Server 16 and newer  
-If you need to use Windows11/Any windows with uefi, you need to make a small change to the iso to make it boot without user interaction <https://serverfault.com/questions/353826/windows-boot-iso-file-without-press-any-key>.  
-Download cloud-init images of the linux distributions you will use. Ubuntu <https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img> is tested.
+If you need to use Windows 11/Any windows with UEFI, you need to make a small change to the iso to make it boot without user interaction <https://serverfault.com/questions/353826/windows-boot-iso-file-without-press-any-key>.  
+Download cloud-init images of the Linux distributions you will use. Ubuntu <https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img> is tested.
 
 ---
 
