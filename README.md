@@ -50,15 +50,13 @@ You can use whatever distro you like, cave was tested and will be tested using D
 
 In case you face SElLnux issues, a quick-fix might be disabling apparmor/SELinux for Libvirt by setting "security_driver" to ["none"] in /etc/libvirt/qemu.conf. Then `systemctl restart libvirtd`  
 
-* Setup routes to your cave host
+* Setup routes to your cave host  
 In order to allow traffic for communicating with the virtual infrastructure, you will need to setup routes.
 Take an ipv4 range that you will later use to make the machines within your deployment accessible to your network.
 The virtualisation host will act as a router/next hop for the virtual networks and machines.  
 For an example, see [example topology](assets/example_topology.drawio.png)
-
-* Create ssh key for root user
-
-* Download images
+* Create ssh key for root user  
+* Download images  
 Download ISOs of the windows versions you will need, tested are: Windows 10, Windows 11, Windows-Server 16 and newer  
 If you need to use Windows 11/Any windows with UEFI, you need to make a small change to the iso to make it boot without user interaction <https://serverfault.com/questions/353826/windows-boot-iso-file-without-press-any-key>.  
 Download cloud-init images of the Linux distributions you will use. Ubuntu <https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img> is tested.
