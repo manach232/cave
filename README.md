@@ -14,7 +14,7 @@ It is heavily worked on right now, stuff will change.
 * Automated provisioning of networks
 * Automated configuration of network interfaces
 * Automated installation of ssh
-* Removal of provisioning artifacts like management interfaces for better realism
+* Removal of provisioning artifacts like management interfaces for increased realism
 * Python API
 
 Cave handles the creation of virtual machines and networks.
