@@ -14,6 +14,7 @@ It is heavily worked on right now, stuff will change.
 * Automated provisioning of networks
 * Automated configuration of network interfaces
 * Automated installation of ssh
+* Removal of provisioning artifacts like management interfaces for better realism
 * Python API
 
 Cave handles the creation of virtual machines and networks.
@@ -120,4 +121,10 @@ ld = range.add_linux_domain(name="linux01", # internal name
                             default_gateway="10.10.1.1", # the range-internal default gateway
                             dns_server="1.1.1.1", # the range internal dns server
                             management_default_gateway="10.10.0.1") # the default gateway for the management interface
+```
+
+### Cleanup
+```python
+# removes management interfaces from machines and removes management network
+range.cleanup()
 ```
