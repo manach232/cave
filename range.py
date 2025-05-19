@@ -46,6 +46,7 @@ class Range():
         self.pool = None
         self.networks = []
         self.domains = []
+        self.management_network = None
 
     def add_pool(self, name: str, path: str):
         self.pool = Pool(name, path)
@@ -68,6 +69,9 @@ class Range():
         return n
 
     def add_management_network(self, name: str, ipv4: str, ipv4_subnet: str):
+        if self.management_network:
+            logger.error("Multiple management networks for a single range is not supported for now")
+            return
 
         n = Network(name=name, 
                     host_isolated=False, 
@@ -79,6 +83,7 @@ class Range():
 
         n.create(self.libvirt_connection)
         self.networks.append(n)
+        self.management_network = n
         return n
 
 
@@ -276,6 +281,15 @@ class Range():
         assert self.pool
         return {"domains":[domain.to_dict() for domain in self.domains], "networks": [network.to_dict() for network in self.networks], "pool": {"name":self.pool.name, "path":self.pool.path}}
 
+    def cleanup(self):
+        logger.info(f"removing management network {self.management_network.name} {self.management_network.libvirt_network.name()}")
+        for domain in self.domains:
+            logger.info(f"removing management network interface for domain {domain.name}")
+            domain.remove_interface_for_network_name(self.management_network.name)
+        self.management_network.rm()
+        self.networks.remove(self.management_network)
+        logger.info(f"done removing management network {self.management_network.name}")
+
     def block_unil_rdy(self):
         for domain in self.domains:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -287,5 +301,4 @@ class Range():
                 sleep(5)
             logger.info(f"{domain.name} is up.")
             sock.close()
-
 

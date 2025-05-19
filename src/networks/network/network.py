@@ -70,9 +70,12 @@ class Network(object):
             self.libvirt_network.create()
             self.host_mac = self.get_host_mac_from_xml()
     
-    def destroy(self):
+    def rm(self):
         assert self.libvirt_network
-        self.libvirt_network.destroy()
+        if self.libvirt_network.isPersistent():
+            self.libvirt_network.undefine()
+        if self.libvirt_network.isActive():
+            self.libvirt_network.destroy()
 
     @staticmethod
     def destroy_by_name(conn, name):

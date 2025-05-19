@@ -53,9 +53,8 @@ class TemplatedLibvirtDomain():
             return ""
         return next(filter(lambda x: x.is_mngmt, self.interfaces)).ipv4
 
-    @staticmethod
-    def remove_interface_for_network_name(conn, name: str, network_name: str):
-        libvirt_domain = conn.lookupByName(name)
-        libvirt_domain.detachDeviceAlias(f"ua-{network_name}", 0x03)
+    def remove_interface_for_network_name(self, network_name: str):
+        assert self.libvirt_domain != None, "libvirt domain is none cannot remove interface"
+        self.libvirt_domain.detachDeviceAlias(f"ua-{network_name}", 0x03)
 
 

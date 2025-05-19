@@ -146,3 +146,4 @@ assert return_val == 0
 return_val = subprocess.call(["ssh", "-i", SSH_PRIV_PATH, "-o", "UserKnownHostsFile /dev/null", "-o StrictHostKeyChecking=no", f"{USERNAME}@10.10.0.4", f'ping 10.10.1.2 -c 2 -4 && ping 10.10.1.3 -c 2 -4'])
 assert return_val == 0
 
+range.cleanup()
