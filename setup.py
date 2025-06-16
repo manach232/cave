@@ -13,6 +13,7 @@ setup(
     license='MIT',
     description='Automation toolkit for automated provisioning virtual infrastructure.',
     long_description=long_desc,
+    long_description_content_type="text/markdown",
     install_requires=dependencies,
     url='https://github.com/sn0ja/cave/',
     author='sn0ja',
