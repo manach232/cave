@@ -3,4 +3,4 @@ venv/
 *.py[cod]
 *$py.class
 *egg-info/
-./build/
+build/
