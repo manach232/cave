@@ -39,8 +39,18 @@ An obvious next step is to further configure the machines using IaC tools like A
 
 ## Getting Started
 
-You will need a Linux machine as your Libvirt virtualisation host.
+You will need a Linux machine as your Libvirt virtualisation host and a machine (can be the same host) on which the client is executed.
 You can use whatever distro you like, cave was tested and will be tested using Debian.
+
+### Installing the client
+
+```BASH
+pip install cave-infra
+```
+
+```python
+from cave import Range, Interface
+```
 
 ### Install libvirt
 * Install Libvirt (Debian) `apt install --no-install-recommends qemu-system libvirt-clients libvirt-daemon-system`
