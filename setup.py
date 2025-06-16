@@ -16,7 +16,7 @@ setup(
         "Jinja2==3.1.6",
         "libvirt-python==11.4.0",
         "MarkupSafe==3.0.2"
-    ]
+    ],
     url='https://github.com/sn0ja/cave/',
     author='sn0ja',
 )
