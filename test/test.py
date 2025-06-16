@@ -3,8 +3,8 @@ import sys
 sys.path.append('../cave')
 
 # setting path
-from src.domains.interface import Interface 
-from range import Range
+from cave.src.domains.interface import Interface 
+from cave.range import Range
 import json, os
 import subprocess
 import logging
