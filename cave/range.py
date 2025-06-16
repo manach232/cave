@@ -1,17 +1,17 @@
 from libvirt import libvirtError
-from .src.pools.dir_pool import Pool
-from .src.networks.network import Network
-from .src.os_types import OsType
-from .src.domains.domain_linux.domain_linux import LinuxDomain
-from .src.domains.interface import Interface
-from .src.autoinstall.linux.cloudinit import CloudInitMetaData, CloudInitUserConfig, CloudInitNetworkConfig
-from .src.autoinstall.cdrom import create_and_push_cd
-from .src.autoinstall.windows.windows_client.autounattend import Autounattend
-from .src.domains.domain_windows.domain_windows import WindowsDomain
-from .src.domains.domain_windows.domain_windows import WindowsDomain
-from .src.autoinstall.windows.windows_server.autounattend import AutounattendServer
-from .src.domains.domain_windows_tpm.domain_windows_tpm import WindowsTPMDomain
-from .src.autoinstall.windows.windows_gpt_tpm.autounattend import AutounattendGPT
+from .src import Pool
+from .src import Network
+from .src import OsType
+from .src import LinuxDomain
+from .src import Interface
+from .src import CloudInitMetaData, CloudInitUserConfig, CloudInitNetworkConfig
+from .src import create_and_push_cd
+from .src import Autounattend
+from .src import WindowsDomain
+from .src import WindowsDomain
+from .src import AutounattendServer
+from .src import WindowsTPMDomain
+from .src import AutounattendGPT
 
 import uuid
 import logging
