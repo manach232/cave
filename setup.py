@@ -8,7 +8,7 @@ setup(
     name='cave-infra',
     version='0.1.1',
     packages=find_packages(),
-    license='MIT',
+    license_files=['LICENSE.txt'],
     description='Automation toolkit for automated provisioning virtual infrastructure.',
     long_description=long_desc,
     long_description_content_type="text/markdown",
