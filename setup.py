@@ -6,8 +6,9 @@ with open('README.md') as f:
 
 setup(
     name='cave-infra',
-    version='0.1.1',
+    version='0.1.5',
     packages=find_packages(),
+    include_package_data=True,
     license_files=['LICENSE.txt'],
     description='Automation toolkit for automated provisioning virtual infrastructure.',
     long_description=long_desc,
