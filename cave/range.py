@@ -1,4 +1,4 @@
-from libvirt import libvirtError
+import libvirt
 from .src import Pool
 from .src import Network
 from .src import OsType
@@ -249,7 +249,7 @@ class Range():
                 logger.info(f"Undefining pool: {pool.name()}")
                 pool.undefine()
 
-            except libvirtError as e:
+            except libvirt.libvirtError as e:
                 logger.error(f"Error processing pool '{pool.name()}': {e}")
         logger.info("All pools and volumes destroyed.")
 
@@ -261,8 +261,9 @@ class Range():
                 if domain.isActive():
                     domain.destroy()
                 if domain.isPersistent():
-                    domain.undefine()
-            except libvirtError as e:
+                    # 0x4: also undefine nvram
+                    domain.undefineFlags(libvirt.VIR_DOMAIN_UNDEFINE_NVRAM)
+            except libvirt.libvirtError as e:
                 logger.error(f"Error processing domain '{domain.name()}': {e}")
 
         logger.info("Nuking networks")
@@ -274,7 +275,7 @@ class Range():
                     network.destroy()
                 if network.isPersistent():
                     network.undefine()
-            except libvirtError as e:
+            except libvirt.libvirtError as e:
                 logger.error(f"Error processing network '{network.name()}': {e}")
 
     def get_state(self):
@@ -301,4 +302,3 @@ class Range():
                 sleep(5)
             logger.info(f"{domain.name} is up.")
             sock.close()
-
