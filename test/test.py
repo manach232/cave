@@ -49,12 +49,10 @@ range.add_pool("pool1",REMOTE_POOL_DIR)
 
 # isolated network
 mngt = range.add_management_network(name="mngmt", 
-                         ipv4="10.10.0.1", 
-                         ipv4_subnet="255.255.255.0")
+                         ipv4_cidr="10.10.0.1/24")
 
 n1 = range.add_network(name="network1", 
-                       ipv4="", 
-                       ipv4_subnet="", 
+                       ipv4_cidr="",
                        mode="")
 
 i1 = Interface(mac="", 
