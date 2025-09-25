@@ -36,7 +36,15 @@ def random_mac():
                                         randint(0, 255))
 
 class Range():
-    def __init__(self, libvirt_connection, ssh_connect_uri: str, remote_autoinstall_iso_path: str, domain_ssh_pub_key: str, domain_user: str, domain_password: str):
+    def __init__(
+        self,
+        libvirt_connection,
+        ssh_connect_uri: str,
+        remote_autoinstall_iso_path: str,
+        domain_ssh_pub_key: str,
+        domain_user: str,
+        domain_password: str
+    ):
         self.libvirt_connection = libvirt_connection
         self.ssh_connect_uri = ssh_connect_uri
         self.remote_autoinstall_iso_path = remote_autoinstall_iso_path
