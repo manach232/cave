@@ -57,14 +57,12 @@ n1 = range.add_network(name="network1",
 
 i1 = Interface(mac="", 
                network=n1, 
-               ipv4="10.10.1.2", 
-               prefix_length=24, 
+               ipv4_cidr="10.10.1.2/24", 
                is_mngmt=False) 
 
 im = Interface(mac="", 
                network=mngt, 
-               ipv4="10.10.0.2", 
-               prefix_length=24, 
+               ipv4_cidr="10.10.0.2/24", 
                is_mngmt=True) 
 
 ubuntu_img = f"{REMOTE_IMAGES_DIR}/{os.path.basename(UBUNTU_IMAGE)}"
@@ -85,28 +83,24 @@ ld = range.add_linux_domain(name="linux01",
 
 i1 = Interface(mac="", 
                network=n1, 
-               ipv4="10.10.1.4", 
-               prefix_length=24, 
+               ipv4_cidr="10.10.1.4/24", 
                is_mngmt=False) 
 
 im = Interface(mac="", 
                network=mngt, 
-               ipv4="10.10.0.4", 
-               prefix_length=24, 
+               ipv4_cidr="10.10.0.4/24", 
                is_mngmt=True) 
 
 ld = range.add_linux_domain("linux02", "lin02", ubuntu_img, [i1, im], "pw", 8, 1024, 2, "6001", "no", "0.0.0.0", "10.10.1.1", "1.1.1.1", "10.10.0.1") 
 
 i1 = Interface(mac="", 
                network=n1, 
-               ipv4="10.10.1.3", 
-               prefix_length=24, 
+               ipv4_cidr="10.10.1.3/24", 
                is_mngmt=False) 
 
 im = Interface(mac="", 
                network=mngt, 
-               ipv4="10.10.0.3",
-               prefix_length=24, 
+               ipv4_cidr="10.10.0.3",
                is_mngmt=True) 
 
 windows_server22_iso = f"{REMOTE_IMAGES_DIR}/{os.path.basename(WINDOWS_SERVER_ISO)}"

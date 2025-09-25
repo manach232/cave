@@ -2,10 +2,27 @@ import os
 import ipaddress
 import jinja2
 import re
-import socket
-import struct
 
 from libvirt import virConnect
+
+
+def cidr_to_netmask(cidr: str) -> tuple[str, str]:
+    """
+    Converts an IPv4 address in CIDR notation into a tuple of IP address and network mask. 
+
+    Parameters
+    ----------
+    cidr : str
+        IPv4 address in CIDR notation.
+
+    Returns
+    -------
+    tuple[str, str]
+        Tuple of IP address and netmask.
+    """
+    interface = ipaddress.IPv4Interface(cidr)
+    address, netmask = interface.with_netmask.split("/")
+    return address, netmask
 
 class Network(object):
     """
@@ -21,10 +38,8 @@ class Network(object):
         IPv4 address in CIDR notation which the libvirt host should use.
     isolate_guest : bool, default: False
         If the guests on this network should be isolated from eachother.
-    ipv6 : str, optional
-        IPv6 address the libvirt host should use.
-    ipv6_prefix : str, optional
-        Network prefix for the libvirt host.
+    ipv6_cidr: str, optional
+        The IPv6 addrtess for the libvirt host in CIDR notation.
     mode : str, optional
         Network mode for the network.
     ingress_route_subnet : str, optional
@@ -40,26 +55,31 @@ class Network(object):
         host_isolated: bool = False,
         ipv4_cidr: str = "",
         isolate_guests: bool = False,
-        ipv6: str = "",
-        ipv6_prefix: str = "64",
+        ipv6_cidr: str = "",
         mode: str = "",
         ingress_route_subnet: str = "",
         ingress_route_gateway: str = "" 
     ):
     
         if ipv4_cidr:
-            ipv4_tuple = Network.cidr_to_netmask(ipv4_cidr)
+            ipv4_tuple = cidr_to_netmask(ipv4_cidr)
             self.ipv4 = ipv4_tuple[0]
             self.ipv4_subnet = ipv4_tuple[1]
         else:
             self.ipv4 = ""
             self.ipv4_subnet = ""
 
+        if ipv6_cidr:
+            ipv6_tuple = ipv6_cidr.split("/")
+            self.ipv6 = ipv6_tuple[0]
+            self.ipv6_prefix = ipv6_tuple[1]
+        else:
+            self.ipv6 = ""
+            self.ipv6_subnet = ""
+
 
         self.name = name
         self.mode = mode
-        self.ipv6 = ipv6
-        self.ipv6_prefix = ipv6_prefix
         self.host_isolated = host_isolated
         self.isolate_guests = "yes" if isolate_guests else "no"
         self.host_mac = None
@@ -67,25 +87,6 @@ class Network(object):
         self.ingress_route_gateway = ingress_route_gateway if ingress_route_gateway else None
 
 
-    @staticmethod
-    def cidr_to_netmask(cidr: str) -> tuple[str, str]:
-        """
-        Converts an IPv4 address in CIDR notation into a tuple of IP address and network mask. 
-
-        Parameters
-        ----------
-        cidr : str
-            IPv4 address in CIDR notation.
-
-        Returns
-        -------
-        tuple[str, str]
-            Tuple of IP address and netmask.
-        """
-        network, net_bits = cidr.split('/')
-        host_bits = 32 - int(net_bits)
-        netmask = socket.inet_ntoa(struct.pack('!I', (1 << 32) - (1 << host_bits)))
-        return network, netmask
 
     def _get_config(self) -> dict:
         """
@@ -159,7 +160,7 @@ class Network(object):
             self.libvirt_network.create()
             self.host_mac = self.get_host_mac_from_xml()
     
-    def destroy(self):
+    def remove(self):
         """Removes the network."""
         assert self.libvirt_network
         if self.libvirt_network.isPersistent():
